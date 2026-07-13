@@ -147,6 +147,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .foto-thumb{width:100%;max-height:200px;object-fit:contain;border-radius:var(--rsm);margin-top:6px;border:1px solid var(--border)}
 .badge-tipo{font-size:11px;font-family:'DM Mono',monospace;margin-right:4px}
 .ver-tiquete{color:var(--blue);text-decoration:none;font-family:'DM Mono',monospace;font-size:10px}
+.ver-ruta{color:var(--blue);text-decoration:none;font-family:'DM Mono',monospace;font-size:11px;font-weight:500}
 
 /* EDIT MODAL */
 .edit-field{margin-bottom:12px}
@@ -498,33 +499,48 @@ async function iniciarViaje(){
   setGps('spin','Obteniendo ubicación de origen…');
   document.getElementById('origenCity').textContent='Localizando…';
 
+  const inicioTs=Date.now(); // hora exacta al presionar
+  viaje={lat:null,lon:null,ciudad:'Localizando…',ts:inicioTs};
+  save_viaje();
+  startTimerLoop();
+
   try{
     const pos=await getGPS();
     const ciudad=await getCiudad(pos.lat,pos.lon);
-    viaje={lat:pos.lat,lon:pos.lon,ciudad,ts:Date.now()};
+    viaje={lat:pos.lat,lon:pos.lon,ciudad,ts:inicioTs};
     document.getElementById('origenCity').textContent=ciudad;
     setGps('ok',`GPS ±${pos.acc}m`);
     autoNombreCorreria(ciudad);
   }catch(e){
-    viaje={lat:null,lon:null,ciudad:'Sin GPS',ts:Date.now()};
+    viaje={lat:null,lon:null,ciudad:'Sin GPS',ts:inicioTs};
     document.getElementById('origenCity').textContent='Sin GPS';
     setGps('err','Sin permiso de ubicación');
   }
-
-  clearInterval(timerInt);
-  const t0=Date.now();
-  timerInt=setInterval(()=>{
-    const s=Math.floor((Date.now()-t0)/1000);
-    const m=String(Math.floor(s/60)).padStart(2,'0');
-    const ss=String(s%60).padStart(2,'0');
-    document.getElementById('vtimer').textContent=`${m}:${ss}`;
-  },1000);
+  save_viaje();
 
   document.getElementById('inValor').focus();
 }
 
+// Guardar viaje en curso para que sobreviva al cierre de la app
+function save_viaje(){
+  if(viaje) localStorage.setItem('viaje_activo', JSON.stringify({...viaje, tipo:tipoActual}));
+  else localStorage.removeItem('viaje_activo');
+}
+function startTimerLoop(){
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    if(!viaje){ clearInterval(timerInt); return; }
+    const s=Math.floor((Date.now()-viaje.ts)/1000);
+    const hh=Math.floor(s/3600);
+    const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
+    const ss=String(s%60).padStart(2,'0');
+    document.getElementById('vtimer').textContent=hh>0?`${hh}:${m}:${ss}`:`${m}:${ss}`;
+  },1000);
+}
+
 function cancelarViaje(){
   viaje=null; clearInterval(timerInt);
+  localStorage.removeItem('viaje_activo');
   document.getElementById('btnIniciar').style.display='flex';
   document.getElementById('viajeCard').classList.remove('visible');
   document.getElementById('inValor').value='';
@@ -604,7 +620,7 @@ function renderList(){
         </div>
       </div>
       ${r.foto?`<img src="${r.foto}" class="foto-thumb" onclick="verFoto('${r.id}')">`:''}
-      ${mO||mD?`<div class="maps-row">${mO?`<a href="${mO}" target="_blank" style="color:var(--green)">📍 Origen</a>`:''} ${mD?`<a href="${mD}" target="_blank" style="color:var(--blue)">📍 Destino</a>`:''}</div>`:''}
+      ${(r.oLat&&r.dLat)?`<div class="maps-row"><a href="https://www.google.com/maps/dir/?api=1&origin=${r.oLat},${r.oLon}&destination=${r.dLat},${r.dLon}&travelmode=driving" target="_blank" class="ver-ruta">🗺 Ver ruta en Google Maps</a></div>`:(mO||mD?`<div class="maps-row">${mO?`<a href="${mO}" target="_blank" style="color:var(--green)">📍 Origen</a>`:''} ${mD?`<a href="${mD}" target="_blank" style="color:var(--blue)">📍 Destino</a>`:''}</div>`:'')}
     </div>`;
   }).join('');
 }
@@ -674,6 +690,7 @@ function renderResDet(){
           <div class="rsi-desc"><span class="badge-tipo">${r.tipo==='bus'?'🚌':'🚕'}</span>${esc(r.desc)}</div>
           ${ruta?`<div class="rsi-ruta">${esc(ruta)}${r.durMin!=null?` · ${r.durMin} min`:''}</div>`:''}
           <div class="rsi-time">${d} · ${h}${r.factura?` · Fact: ${esc(r.factura)}`:''}</div>
+          ${(r.oLat&&r.dLat)?`<a href="https://www.google.com/maps/dir/?api=1&origin=${r.oLat},${r.oLon}&destination=${r.dLat},${r.dLon}&travelmode=driving" target="_blank" class="ver-ruta">🗺 Ver ruta</a>`:''}
         </div>
         <div class="rsi-val">$${fmt(r.valor)}</div>
       </div>
@@ -795,7 +812,38 @@ function abrirEditCorr(id){
   const c=db.correrias.find(x=>x.id===id);
   if(!c) return;
   document.getElementById('editCorrNombre').value=c.nombre;
+  // Mostrar botón reactivar solo si está cerrada
+  let btnReact=document.getElementById('btnReactivar');
+  if(c.cerrada){
+    if(!btnReact){
+      btnReact=document.createElement('button');
+      btnReact.id='btnReactivar';
+      btnReact.className='btn-borrar-corr';
+      btnReact.style.borderColor='var(--green)';
+      btnReact.style.color='var(--green)';
+      btnReact.onclick=reactivarCorreria;
+      btnReact.textContent='♻ Reabrir esta correría';
+      document.querySelector('#moEditCorr .btn-borrar-corr').before(btnReact);
+    }
+    btnReact.style.display='block';
+  } else if(btnReact){ btnReact.style.display='none'; }
   abrirMo('moEditCorr');
+}
+function reactivarCorreria(){
+  const c=db.correrias.find(x=>x.id===editandoCorrId);
+  if(!c) return;
+  // Cerrar cualquier otra activa
+  if(db.activa && db.activa!==c.id){
+    const prev=db.correrias.find(x=>x.id===db.activa);
+    if(prev) prev.cerrada=true;
+  }
+  c.cerrada=false;
+  db.activa=c.id;
+  save();
+  cerrarMo('moEditCorr');
+  updateHdr(); renderCorrerias(); renderList();
+  goTab('registro',document.querySelectorAll('.tab-btn')[0]);
+  toast('♻ Correría reabierta');
 }
 function guardarEditCorr(){
   const c=db.correrias.find(x=>x.id===editandoCorrId);
@@ -834,8 +882,26 @@ function toast(msg,type=''){
   setTimeout(()=>t.classList.remove('show'),2400);
 }
 
+// ── RESTAURAR VIAJE EN CURSO ──
+function restaurarViaje(){
+  const saved=localStorage.getItem('viaje_activo');
+  if(!saved) return;
+  try{
+    const v=JSON.parse(saved);
+    if(!db.activa){ localStorage.removeItem('viaje_activo'); return; }
+    viaje={lat:v.lat,lon:v.lon,ciudad:v.ciudad,ts:v.ts};
+    tipoActual=v.tipo||'taxi';
+    setTipo(tipoActual);
+    document.getElementById('btnIniciar').style.display='none';
+    document.getElementById('viajeCard').classList.add('visible');
+    document.getElementById('origenCity').textContent=v.ciudad||'Sin GPS';
+    setGps(v.lat?'ok':'err', v.lat?'Viaje en curso restaurado':'Sin GPS de origen');
+    startTimerLoop();
+  }catch(e){ localStorage.removeItem('viaje_activo'); }
+}
+
 // ── INIT ──
-updateHdr(); renderList(); checkOAuth();
+updateHdr(); renderList(); restaurarViaje(); checkOAuth();
 </script>
 </body>
 </html>
