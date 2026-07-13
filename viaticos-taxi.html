@@ -309,7 +309,7 @@ async function getCiudad(lat,lon){
     const d=await r.json();
     const a=d.address||{};
     return a.city||a.town||a.village||a.municipality||a.county||a.state||'Ubicación';
-  }catch(){ return 'Sin nombre'; }
+  }catch(e){ return 'Sin nombre'; }
 }
 function setGps(state,txt){
   document.getElementById('gpsDot').className='gps-dot'+(state?' '+state:'');
@@ -427,7 +427,7 @@ async function registrarLlegada(){
     const pos=await getGPS();
     dest={lat:pos.lat,lon:pos.lon,ciudad:await getCiudad(pos.lat,pos.lon)};
     setGps('ok',`GPS ±${pos.acc}m`);
-  }catch(){ setGps('err','Destino sin GPS'); }
+  }catch(e){ setGps('err','Destino sin GPS'); }
 
   const r={
     id:Date.now(),correriaId:db.activa,valor,desc,
