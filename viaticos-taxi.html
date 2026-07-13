@@ -53,6 +53,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .prefix span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:16px;color:var(--muted);pointer-events:none}
 .prefix input{padding-left:28px}
 
+.tipo-toggle{display:flex;gap:8px}
+.tipo-btn{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);color:var(--muted);padding:12px 8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.tipo-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.tipo-btn.active.bus{background:var(--blue);border-color:var(--blue);color:#fff}
+.tipo-sub{font-size:9px;font-weight:500;font-family:'DM Mono',monospace;opacity:.7;text-transform:uppercase}
+
 .btn-llegar{width:100%;background:var(--green);color:#000;border:none;border-radius:var(--rsm);padding:15px;font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
 .btn-llegar:active{transform:scale(.97)}
 .btn-cancel-v{width:100%;background:none;border:none;color:var(--accent2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;padding:10px;margin-top:4px}
@@ -131,6 +137,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mcancel{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:13px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer}
 .mok{flex:2;background:var(--accent);border:none;color:#000;border-radius:var(--rsm);padding:13px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer}
 
+/* TIPO TOGGLE */
+.tipo-toggle{display:flex;gap:8px}
+.tipo-btn{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);color:var(--muted);padding:12px 8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .2s}
+.tipo-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.tipo-sub{font-size:9px;font-weight:500;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.03em;opacity:.7}
+.btn-foto{width:100%;background:var(--surface);border:1px dashed var(--border);color:var(--text);border-radius:var(--rsm);padding:12px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+#fotoPreview img,.edit-foto-prev img{max-width:100%;border-radius:var(--rsm);margin-top:8px;border:1px solid var(--border)}
+.foto-thumb{width:100%;max-height:200px;object-fit:contain;border-radius:var(--rsm);margin-top:6px;border:1px solid var(--border)}
+.badge-tipo{font-size:11px;font-family:'DM Mono',monospace;margin-right:4px}
+.ver-tiquete{color:var(--blue);text-decoration:none;font-family:'DM Mono',monospace;font-size:10px}
+
+/* EDIT MODAL */
+.edit-field{margin-bottom:12px}
+.edit-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;display:block;margin-bottom:6px}
+.edit-field input,.edit-field textarea{background:var(--card);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 14px;width:100%;outline:none}
+.edit-field input:focus,.edit-field textarea:focus{border-color:var(--accent)}
+.edit-field textarea{resize:none;height:60px}
+.btn-borrar-corr{width:100%;background:none;border:1px solid var(--accent2);color:var(--accent2);border-radius:var(--rsm);padding:12px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
+
 /* TOAST */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#000;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:400}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -141,6 +166,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <body>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL EDITAR REGISTRO -->
+<div class="mo" id="moEdit">
+  <div class="mb">
+    <h2>Editar registro</h2>
+    <div class="edit-field">
+      <label>Tipo</label>
+      <div class="tipo-toggle">
+        <button type="button" class="tipo-btn" id="editTipoTaxi" onclick="editSetTipo('taxi')">🚕 Taxi<span class="tipo-sub">sin tiquete</span></button>
+        <button type="button" class="tipo-btn" id="editTipoBus" onclick="editSetTipo('bus')">🚌 Bus<span class="tipo-sub">con tiquete</span></button>
+      </div>
+    </div>
+    <div class="edit-field"><label>Valor</label><input type="number" id="editValor" inputmode="numeric"></div>
+    <div class="edit-field"><label>Descripción</label><textarea id="editDesc"></textarea></div>
+    <div class="edit-field" id="editBusExtra"><label>N° factura / tiquete</label><input type="text" id="editFactura"></div>
+    <div class="mbtns">
+      <button class="mcancel" onclick="cerrarMo('moEdit')">Cancelar</button>
+      <button class="mok" onclick="guardarEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CORRERÍA -->
+<div class="mo" id="moEditCorr">
+  <div class="mb">
+    <h2>Editar correría</h2>
+    <div class="edit-field"><label>Nombre</label><input type="text" id="editCorrNombre" maxlength="50"></div>
+    <div class="mbtns">
+      <button class="mcancel" onclick="cerrarMo('moEditCorr')">Cancelar</button>
+      <button class="mok" onclick="guardarEditCorr()">Guardar</button>
+    </div>
+    <button class="btn-borrar-corr" onclick="borrarCorreria()">🗑 Borrar esta correría completa</button>
+  </div>
+</div>
 
 <!-- MODAL CORRERÍA -->
 <div class="mo" id="moNueva">
@@ -199,12 +258,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         </div>
       </div>
       <div class="frow">
+        <label>Tipo de transporte</label>
+        <div class="tipo-toggle">
+          <button type="button" class="tipo-btn active" id="tipoTaxi" onclick="setTipo('taxi')">🚕 Taxi<span class="tipo-sub">sin tiquete</span></button>
+          <button type="button" class="tipo-btn" id="tipoBus" onclick="setTipo('bus')">🚌 Bus<span class="tipo-sub">con tiquete</span></button>
+        </div>
+      </div>
+      <div class="frow">
         <label>Valor pagado</label>
         <div class="prefix"><span>$</span><input type="number" id="inValor" placeholder="0" inputmode="numeric" min="0"></div>
       </div>
       <div class="frow">
         <label>Descripción</label>
-        <textarea id="inDesc" placeholder="Ej: Hotel → cliente Martínez"></textarea>
+        <textarea id="inDesc" placeholder="Ej: Terminal → cliente Martínez"></textarea>
+      </div>
+      <div id="busExtra" style="display:none">
+        <div class="frow">
+          <label>N° de factura / tiquete <span style="text-transform:none;color:var(--muted)">(opcional)</span></label>
+          <input type="text" id="inFactura" placeholder="Ej: 00123456">
+        </div>
+        <div class="frow">
+          <label>Foto del tiquete <span style="text-transform:none;color:var(--muted)">(opcional)</span></label>
+          <input type="file" id="inFoto" accept="image/*" capture="environment" style="display:none" onchange="cargarFoto(this)">
+          <button type="button" class="btn-foto" id="btnFoto" onclick="document.getElementById('inFoto').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Tomar / elegir foto
+          </button>
+          <div id="fotoPreview"></div>
+        </div>
       </div>
       <button class="btn-llegar" onclick="registrarLlegada()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><polyline points="20 6 9 17 4 12"/></svg>
@@ -290,6 +371,43 @@ let timerInt = null;
 let resActive = null;
 let driveToken = null;
 let gClientId = localStorage.getItem('gcid') || '';
+let tipoActual = 'taxi';
+let fotoActual = null; // base64 comprimido
+let editandoId = null;
+let editTipoActual = 'taxi';
+let editandoCorrId = null;
+
+// ── TIPO TOGGLE ──
+function setTipo(t){
+  tipoActual=t;
+  document.getElementById('tipoTaxi').classList.toggle('active',t==='taxi');
+  document.getElementById('tipoBus').classList.toggle('active',t==='bus');
+  document.getElementById('busExtra').style.display = t==='bus'?'block':'none';
+}
+
+// ── FOTO ──
+function cargarFoto(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      // Comprimir a max 800px
+      const max=800;
+      let w=img.width,h=img.height;
+      if(w>h && w>max){ h=h*max/w; w=max; }
+      else if(h>max){ w=w*max/h; h=max; }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      fotoActual=canvas.toDataURL('image/jpeg',0.6);
+      document.getElementById('fotoPreview').innerHTML=`<img src="${fotoActual}" class="foto-thumb">`;
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 // ── GPS ──
 function getGPS(){
@@ -411,6 +529,10 @@ function cancelarViaje(){
   document.getElementById('viajeCard').classList.remove('visible');
   document.getElementById('inValor').value='';
   document.getElementById('inDesc').value='';
+  document.getElementById('inFactura').value='';
+  document.getElementById('fotoPreview').innerHTML='';
+  fotoActual=null;
+  setTipo('taxi');
   setGps('','GPS listo');
 }
 
@@ -431,12 +553,21 @@ async function registrarLlegada(){
 
   const r={
     id:Date.now(),correriaId:db.activa,valor,desc,
+    tipo:tipoActual,
+    factura:tipoActual==='bus'?document.getElementById('inFactura').value.trim():'',
+    foto:tipoActual==='bus'?fotoActual:null,
     fecha:new Date().toISOString(),
     oLat:viaje?.lat||null, oLon:viaje?.lon||null, oCiudad:viaje?.ciudad||null,
     dLat:dest.lat, dLon:dest.lon, dCiudad:dest.ciudad,
     durMin:viaje?Math.round((Date.now()-viaje.ts)/60000):null
   };
-  db.registros.push(r); save();
+  try{
+    db.registros.push(r); save();
+  }catch(err){
+    db.registros.pop();
+    toast('⚠ Sin espacio — foto muy grande','err');
+    return;
+  }
 
   cancelarViaje();
   renderList();
@@ -462,21 +593,56 @@ function renderList(){
     const mD=r.dLat?`https://maps.google.com/?q=${r.dLat},${r.dLon}`:'';
     return `<div class="ritem">
       <div class="ritop">
-        <div style="flex:1">
-          <div class="ridesc">${esc(r.desc)}</div>
+        <div style="flex:1" onclick="abrirEdit(${r.id})">
+          <div class="ridesc"><span class="badge-tipo">${r.tipo==='bus'?'🚌':'🚕'}</span>${esc(r.desc)}</div>
           ${ruta?`<div class="riruta">${esc(ruta)}${r.durMin!=null?` · ${r.durMin} min`:''}</div>`:''}
-          <div class="ritime">${d} · ${h}</div>
+          <div class="ritime">${d} · ${h}${r.factura?` · Fact: ${esc(r.factura)}`:''}</div>
         </div>
         <div style="display:flex;align-items:center">
           <div class="rival">$${fmt(r.valor)}</div>
           <button class="btn-del" onclick="delReg(${r.id})">✕</button>
         </div>
       </div>
+      ${r.foto?`<img src="${r.foto}" class="foto-thumb" onclick="verFoto('${r.id}')">`:''}
       ${mO||mD?`<div class="maps-row">${mO?`<a href="${mO}" target="_blank" style="color:var(--green)">📍 Origen</a>`:''} ${mD?`<a href="${mD}" target="_blank" style="color:var(--blue)">📍 Destino</a>`:''}</div>`:''}
     </div>`;
   }).join('');
 }
-function delReg(id){ if(!confirm('¿Eliminar?')) return; db.registros=db.registros.filter(r=>r.id!==id); save(); renderList(); }
+function delReg(id){ if(!confirm('¿Eliminar este registro?')) return; db.registros=db.registros.filter(r=>r.id!==id); save(); renderList(); }
+function verFoto(id){ const r=db.registros.find(x=>x.id==id); if(r?.foto){ const w=window.open(); w.document.write(`<img src="${r.foto}" style="max-width:100%">`); } }
+
+// ── EDITAR REGISTRO ──
+function abrirEdit(id){
+  const r=db.registros.find(x=>x.id===id);
+  if(!r) return;
+  editandoId=id;
+  editTipoActual=r.tipo||'taxi';
+  editSetTipo(editTipoActual);
+  document.getElementById('editValor').value=r.valor;
+  document.getElementById('editDesc').value=r.desc;
+  document.getElementById('editFactura').value=r.factura||'';
+  abrirMo('moEdit');
+}
+function editSetTipo(t){
+  editTipoActual=t;
+  document.getElementById('editTipoTaxi').classList.toggle('active',t==='taxi');
+  document.getElementById('editTipoBus').classList.toggle('active',t==='bus');
+  document.getElementById('editBusExtra').style.display=t==='bus'?'block':'none';
+}
+function guardarEdit(){
+  const r=db.registros.find(x=>x.id===editandoId);
+  if(!r) return;
+  const v=parseFloat(document.getElementById('editValor').value);
+  if(!v||v<=0){ toast('⚠ Valor inválido','warn'); return; }
+  r.valor=v;
+  r.desc=document.getElementById('editDesc').value.trim();
+  r.tipo=editTipoActual;
+  r.factura=editTipoActual==='bus'?document.getElementById('editFactura').value.trim():'';
+  save();
+  cerrarMo('moEdit');
+  renderList();
+  toast('✓ Registro actualizado');
+}
 
 // ── RESUMEN ──
 function renderResumen(){
@@ -492,7 +658,7 @@ function renderResDet(){
   const items=db.registros.filter(r=>r.correriaId===resActive);
   const total=items.reduce((s,r)=>s+r.valor,0);
   document.getElementById('tval').textContent=`$ ${fmt(total)}`;
-  document.getElementById('tcount').textContent=`${items.length} taxi${items.length!==1?'s':''}`;
+  document.getElementById('tcount').textContent=`${items.length} viaje${items.length!==1?'s':''}`;
   const c=db.correrias.find(x=>x.id===resActive);
   const sub=c?.ultimaSubida?`☁️ Subido ${new Date(c.ultimaSubida).toLocaleDateString('es-CO',{day:'numeric',month:'short'})}`:'';
   document.getElementById('driveSt').textContent=sub;
@@ -505,9 +671,9 @@ function renderResDet(){
     return `<div class="rsitem">
       <div class="rsi-top">
         <div style="flex:1">
-          <div class="rsi-desc">${esc(r.desc)}</div>
+          <div class="rsi-desc"><span class="badge-tipo">${r.tipo==='bus'?'🚌':'🚕'}</span>${esc(r.desc)}</div>
           ${ruta?`<div class="rsi-ruta">${esc(ruta)}${r.durMin!=null?` · ${r.durMin} min`:''}</div>`:''}
-          <div class="rsi-time">${d} · ${h}</div>
+          <div class="rsi-time">${d} · ${h}${r.factura?` · Fact: ${esc(r.factura)}`:''}</div>
         </div>
         <div class="rsi-val">$${fmt(r.valor)}</div>
       </div>
@@ -520,13 +686,13 @@ function exportCSV(){
   const c=db.correrias.find(x=>x.id===resActive);
   const items=db.registros.filter(r=>r.correriaId===resActive);
   if(!items.length){ toast('Sin datos','warn'); return; }
-  const rows=[['Fecha','Hora','Descripcion','Valor COP','Origen','Destino','Duracion min','Lat Origen','Lon Origen','Lat Destino','Lon Destino','Correria']];
+  const rows=[['Fecha','Hora','Tipo','Descripcion','Valor COP','Factura','Origen','Destino','Duracion min','Lat Origen','Lon Origen','Lat Destino','Lon Destino','Correria']];
   items.forEach(r=>{
     const dt=new Date(r.fecha);
-    rows.push([dt.toLocaleDateString('es-CO'),dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),r.desc,r.valor,r.oCiudad||'',r.dCiudad||'',r.durMin||'',r.oLat||'',r.oLon||'',r.dLat||'',r.dLon||'',c?c.nombre:'']);
+    rows.push([dt.toLocaleDateString('es-CO'),dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),r.tipo==='bus'?'Bus':'Taxi',r.desc,r.valor,r.factura||'',r.oCiudad||'',r.dCiudad||'',r.durMin||'',r.oLat||'',r.oLon||'',r.dLat||'',r.dLon||'',c?c.nombre:'']);
   });
   const t=items.reduce((s,r)=>s+r.valor,0);
-  rows.push(['','','TOTAL',t,'','','','','','','','']);
+  rows.push(['','','','TOTAL',t,'','','','','','','','','']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
@@ -568,13 +734,13 @@ async function uploadToDrive(correriaId){
   const items=db.registros.filter(r=>r.correriaId===cId);
   if(!items.length){ toast('Sin datos para subir','warn'); return; }
   document.getElementById('driveSt').textContent='⏳ Subiendo…';
-  const rows=[['Fecha','Hora','Descripcion','Valor COP','Origen','Destino','Duracion min','Correria']];
+  const rows=[['Fecha','Hora','Tipo','Descripcion','Valor COP','Factura','Origen','Destino','Duracion min','Correria']];
   items.forEach(r=>{
     const dt=new Date(r.fecha);
-    rows.push([dt.toLocaleDateString('es-CO'),dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),r.desc,r.valor,r.oCiudad||'',r.dCiudad||'',r.durMin||'',c?c.nombre:'']);
+    rows.push([dt.toLocaleDateString('es-CO'),dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),r.tipo==='bus'?'Bus':'Taxi',r.desc,r.valor,r.factura||'',r.oCiudad||'',r.dCiudad||'',r.durMin||'',c?c.nombre:'']);
   });
   const t=items.reduce((s,r)=>s+r.valor,0);
-  rows.push(['','','TOTAL',t,'','','','']);
+  rows.push(['','','','TOTAL',t,'','','','','']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const nombre=`Viáticos_${(c?.nombre||'correria').replace(/[\s·]+/g,'_')}.csv`;
   const boundary='viaticos_bound';
@@ -606,7 +772,7 @@ function renderCorrerias(){
     const ini=new Date(activa.inicio).toLocaleDateString('es-CO',{day:'numeric',month:'long'});
     const regs=db.registros.filter(r=>r.correriaId===activa.id);
     const total=regs.reduce((s,r)=>s+r.valor,0);
-    card.innerHTML=`<div class="cactcard"><div class="cal">✦ Correría activa</div><div class="can">${esc(activa.nombre)}</div><div class="cam">${ini} · ${regs.length} taxis · $${fmt(total)}</div></div>`;
+    card.innerHTML=`<div class="cactcard" onclick="abrirEditCorr(${activa.id})"><div class="cal">✦ Correría activa · toca para editar</div><div class="can">${esc(activa.nombre)}</div><div class="cam">${ini} · ${regs.length} registros · $${fmt(total)}</div></div>`;
     bw.innerHTML=`<button class="btn-cerrar" onclick="cerrarCorreria()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="20 6 9 17 4 12"/></svg>Cerrar correría</button>`;
   }else{
     card.innerHTML=`<div style="color:var(--muted);font-size:14px;margin-bottom:12px">No hay correría activa. Crea una para empezar.</div>`;
@@ -619,8 +785,43 @@ function renderCorrerias(){
     const total=regs.reduce((s,r)=>s+r.valor,0);
     const d=new Date(c.inicio).toLocaleDateString('es-CO',{day:'numeric',month:'short'});
     const sub=c.ultimaSubida?' · ☁️':'';
-    return `<div class="chi"><div><div class="chi-n">${esc(c.nombre)}</div><div class="chi-m">${d} · ${regs.length} taxis${sub}</div></div><div class="chi-t">$${fmt(total)}</div></div>`;
-  }).join(''):'<div style="color:var(--muted);font-size:13px">Sin correría cerradas</div>';
+    return `<div class="chi" onclick="abrirEditCorr(${c.id})"><div><div class="chi-n">${esc(c.nombre)}</div><div class="chi-m">${d} · ${regs.length} registros${sub}</div></div><div class="chi-t">$${fmt(total)}</div></div>`;
+  }).join(''):'<div style="color:var(--muted);font-size:13px">Sin correrías cerradas</div>';
+}
+
+// ── EDITAR / BORRAR CORRERÍA ──
+function abrirEditCorr(id){
+  editandoCorrId=id;
+  const c=db.correrias.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('editCorrNombre').value=c.nombre;
+  abrirMo('moEditCorr');
+}
+function guardarEditCorr(){
+  const c=db.correrias.find(x=>x.id===editandoCorrId);
+  if(!c) return;
+  const n=document.getElementById('editCorrNombre').value.trim();
+  if(!n){ toast('⚠ Nombre vacío','warn'); return; }
+  c.nombre=n;
+  c.fijado=true; // ya no se autocompleta
+  save();
+  cerrarMo('moEditCorr');
+  updateHdr(); renderCorrerias();
+  toast('✓ Correría actualizada');
+}
+function borrarCorreria(){
+  const c=db.correrias.find(x=>x.id===editandoCorrId);
+  if(!c) return;
+  const regs=db.registros.filter(r=>r.correriaId===editandoCorrId).length;
+  if(!confirm(`¿Borrar "${c.nombre}" y sus ${regs} registros? Esto no se puede deshacer.`)) return;
+  db.registros=db.registros.filter(r=>r.correriaId!==editandoCorrId);
+  db.correrias=db.correrias.filter(x=>x.id!==editandoCorrId);
+  if(db.activa===editandoCorrId) db.activa=null;
+  if(resActive===editandoCorrId) resActive=null;
+  save();
+  cerrarMo('moEditCorr');
+  updateHdr(); renderCorrerias(); renderList();
+  toast('Correría borrada');
 }
 
 // ── UTILS ──
@@ -638,3 +839,4 @@ updateHdr(); renderList(); checkOAuth();
 </script>
 </body>
 </html>
+
