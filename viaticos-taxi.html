@@ -731,9 +731,11 @@ function subirDrive(){
   if(!gClientId){ abrirMo('moDrive'); return; }
   iniciarOAuth();
 }
+// URL de redirección FIJA — debe coincidir EXACTAMENTE con la registrada en Google Cloud Console
+const REDIRECT_URI = 'https://katherinegj1705-design.github.io/viaticos/viaticos-taxi.html';
 function iniciarOAuth(){
   sessionStorage.setItem('drive_cid', resActive||db.activa||'');
-  const p=new URLSearchParams({client_id:gClientId,redirect_uri:location.href.split('?')[0].split('#')[0],response_type:'token',scope:'https://www.googleapis.com/auth/drive.file',include_granted_scopes:'true'});
+  const p=new URLSearchParams({client_id:gClientId,redirect_uri:REDIRECT_URI,response_type:'token',scope:'https://www.googleapis.com/auth/drive.file',include_granted_scopes:'true'});
   location.href=`https://accounts.google.com/o/oauth2/v2/auth?${p}`;
 }
 function checkOAuth(){
